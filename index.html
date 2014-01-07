@@ -2,6 +2,7 @@
 <head>
 	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 	<script type="text/javascript">
+		"use strict";
 		//SORTING FUNCTIONS
 		//Inputs are arrays with the following format [<key>, <value>] (represents a JSON property)
 		var sorts = ['none','lexographicKeySort', 'lexographicValueSort'];
@@ -21,12 +22,12 @@
 		//Inputs is an array with the following format [key, value] (represents a JSON property)
 		var filters = ['none','removeFunctions'];
 		function removeFunctions(arr) {
-			return arr[1].substr(0,8).localeCompare('function') == 0;
+			return arr[1].substr(0,8).localeCompare('function') !== 0;
 		}
 		
 		//Strip starting and ending whitespace from a string
 		function strip(s) {
-			return s.replace(/^\s+|\s+$/g,'')
+			return s.replace(/^\s+|\s+$/g,'');
 		}
 		
 		//Similar functionality to python's join
@@ -40,7 +41,7 @@
 		
 		function generateJSON(vals) {
 			var json = '{\n';
-			json += join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1] }));
+			json += join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1]; }));
 			json += '\n}';
 			return json;
 		}
@@ -48,13 +49,13 @@
 		function work() {
 			var text = $('#text').val();
 			//Parse JSON
-			parsedVals = text.substring(text.indexOf('{') + 1,text.lastIndexOf('}')).split(',').map(function(s) { return s.split(':').map(strip); });
+			var parsedVals = text.substring(text.indexOf('{') + 1,text.lastIndexOf('}')).split(',').map(function(s) { return s.split(':').map(strip); });
 			
-			filterFunc = $('#filter').val();
-			sortFunc = $('#sort').val();
+			var filterFunc = $('#filter').val();
+			var sortFunc = $('#sort').val();
 			
-			if(strip(filterFunc) != '') parsedVals.filter(eval(filterFunc));
-			if(strip(sortFunc) != '') parsedVals.sort(eval(sortFunc));
+			if(strip(filterFunc) !== '') parsedVals.filter(eval(filterFunc));
+			if(strip(sortFunc) !== '') parsedVals.sort(eval(sortFunc));
 			
 			//Generate new JSON and convert to screen readable format
 			var json = generateJSON(parsedVals);
