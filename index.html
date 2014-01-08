@@ -1,6 +1,8 @@
 <html>
 <head>
 	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+	<script src="js/utils.js"></script>
+	<script src="js/ui-utils.js"></script>
 	<script type="text/javascript">
 		"use strict";
 		//SORTING FUNCTIONS
@@ -25,23 +27,9 @@
 			return arr[1].substr(0,8).localeCompare('function') !== 0;
 		}
 		
-		//Strip starting and ending whitespace from a string
-		function strip(s) {
-			return s.replace(/^\s+|\s+$/g,'');
-		}
-		
-		//Similar functionality to python's join
-		function join(s, arr) {
-			var str = arr[0];
-			for(var i = 1; i < arr.length; i++) {
-				str += s + arr[i];
-			}
-			return str;
-		}
-		
 		function generateJSON(vals) {
 			var json = '{\n';
-			json += join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1]; }));
+			json += Utils.join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1]; }));
 			json += '\n}';
 			return json;
 		}
@@ -49,13 +37,13 @@
 		function work() {
 			var text = $('#text').val();
 			//Parse JSON
-			var parsedVals = text.substring(text.indexOf('{') + 1,text.lastIndexOf('}')).split(',').map(function(s) { return s.split(':').map(strip); });
+			var parsedVals = Utils.getBracketInner(text).split(',').map(function(s) { return s.split(':').map(Utils.strip); });
 			
 			var filterFunc = $('#filter').val();
 			var sortFunc = $('#sort').val();
 			
-			if(strip(filterFunc) !== '') parsedVals.filter(eval(filterFunc));
-			if(strip(sortFunc) !== '') parsedVals.sort(eval(sortFunc));
+			if(Utils.strip(filterFunc) !== '') parsedVals = parsedVals.filter(Utils.createFunction(filterFunc));
+			if(Utils.strip(sortFunc) !== '') parsedVals.sort(Utils.createFunction(sortFunc));
 			
 			//Generate new JSON and convert to screen readable format
 			var json = generateJSON(parsedVals);
@@ -75,6 +63,8 @@
 		}
 		
 		$(function() {
+			$(document).delegate('textarea', 'keydown', UIUtils.insertTabOnTabPress);
+			
 			var sortList = $('#sortList'); 
 			for(var idx in sorts) {
 			    $('<option />', {value: sorts[idx], text: sorts[idx]}).appendTo(sortList);
