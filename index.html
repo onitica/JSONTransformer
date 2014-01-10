@@ -3,6 +3,7 @@
 	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 	<script src="js/utils.js"></script>
 	<script src="js/ui-utils.js"></script>
+	<script src="js/json-parser.js"></script>
 	<script type="text/javascript">
 		"use strict";
 		//SORTING FUNCTIONS
@@ -27,27 +28,24 @@
 			return arr[1].substr(0,8).localeCompare('function') !== 0;
 		}
 		
-		function generateJSON(vals) {
-			var json = '{\n';
-			json += Utils.join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1]; }));
-			json += '\n}';
-			return json;
-		}
-		
 		function work() {
-			var text = $('#text').val();
-			//Parse JSON
-			var parsedVals = Utils.getBracketInner(text).split(',').map(function(s) { return s.split(':').map(Utils.strip); });
+			try {
+				var text = $('#text').val();
+				//Parse JSON
+				var parsedVals = JSONParser.parse(text);
 			
-			var filterFunc = $('#filter').val();
-			var sortFunc = $('#sort').val();
+				var filterFunc = $('#filter').val();
+				var sortFunc = $('#sort').val();
 			
-			if(Utils.strip(filterFunc) !== '') parsedVals = parsedVals.filter(Utils.createFunction(filterFunc));
-			if(Utils.strip(sortFunc) !== '') parsedVals.sort(Utils.createFunction(sortFunc));
+				if(Utils.strip(filterFunc) !== '') parsedVals = parsedVals.filter(Utils.createFunction(filterFunc));
+				if(Utils.strip(sortFunc) !== '') parsedVals.sort(Utils.createFunction(sortFunc));
 			
-			//Generate new JSON and convert to screen readable format
-			var json = generateJSON(parsedVals);
-			$('#result').html(json.replace(/\n/g, '<br/>').replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp'));
+				//Generate new JSON and convert to screen readable format
+				var json = JSONParser.generate(parsedVals);
+				$('#result').css('color', 'black').html(json.replace(/\n/g, '<br/>').replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp'));
+	    	} catch (e) {
+				$('#result').css('color', 'red').html(e);
+			}
 		}
 		
 		function changeFilterFunc() {
@@ -78,19 +76,19 @@
 </head>
 <body>
 	<div style="float:left;">
-	<h1>Inputs Here</h1>
+	<h1>JSON Transformer</h1>
+	<input id="submitBtn" value="run" type="button" onclick='javascript:work()'>
 	<h2>JSON</h2>
-   	<textarea id="text" name="text" cols="75" rows="10" placeholder="JSON"></textarea>
+   	<textarea id="text" name="text" cols="75" rows="10" placeholder="Put JSON to transform here..."></textarea>
 	<br/>
 	<h2>Filter function</h2>
 	<div>Examples: <select id="filterList" onchange="changeFilterFunc()"></select></div>
-	<textarea id="filter" name="filter" cols="75" rows="10" placeholder="filter"></textarea>
+	<textarea id="filter" name="filter" cols="75" rows="10" placeholder="Put a filter function here..."></textarea>
 	<br/>
 	<h2>Sort function</h2>
 	<div>Examples: <select id="sortList" onchange="changeSortFunc()"></select></div>
-	<textarea id="sort" name="sort" cols="75" rows="10" placeholder="sort"></textarea>
+	<textarea id="sort" name="sort" cols="75" rows="10" placeholder="Put a sort function here..."></textarea>
 	<br/>
-	<input id="submitBtn" value="run" type="button" onclick='javascript:work()'>
 	</div>
 	<div style="float:left;margin-left:40px">
 	<h1>Results</h1>
