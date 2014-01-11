@@ -32,7 +32,7 @@
 	//Remove empty lines and all line endings from text
 	//TODO: Use for testing in future
 	function removeLineEndings(text) {
-		return text.replace(/[\s]+\n|\n/g,'');
+		return text.replace(/([\s]+)?\n/g,'');
 	}
 	
 	//Generate a matrix of key value pairs from the string
