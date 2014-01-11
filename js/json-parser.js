@@ -24,9 +24,20 @@
 		return parsedVals;
 	}
 	
+	function removeComments(text) {
+		//Remove single line comments and any spaces inbetween and then remove multi-line comments
+		return text.replace(/[\t ]+\/\/.*\n/g,'').replace(/\/\*[\s\S]*?\*\//gm,''); 
+	}
+	
+	//Remove empty lines and all line endings from text
+	//TODO: Use for testing in future
+	function removeLineEndings(text) {
+		return text.replace(/[\s]+\n|\n/g,'');
+	}
+	
 	//Generate a matrix of key value pairs from the string
 	function parse(text) {
-		return validateParsedVals(Utils.getBracketInner(text).split(',').map(function(s) { return s.split(':').map(Utils.strip); }));
+		return validateParsedVals(Utils.getBracketInner(removeComments(text)).split(',').map(function(s) { return s.split(':').map(Utils.strip); }));
 	}
 	
 	return {
