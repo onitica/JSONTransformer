@@ -72,39 +72,27 @@
 			}
 		}
 		
-		function changeFilterFunc() {
-			var flv = $('#filterList').val();
-			var filterVal = flv == 'none' ? '' : window[flv].toString(); 
-			$('#filter').val(filterVal);
+		//Use to trigger update when a select input is changed for a textArea
+		function changeFunc(selectID, textAreaID) {
+			var v = $('#' + selectID).val();
+			var tVal = v == 'none' ? '' : window[v].toString(); 
+			$('#' + textAreaID).val(tVal);
 		}
 		
-		function changeSortFunc() {
-			var slv = $('#sortList').val();
-			var sortVal = slv == 'none' ? '' : window[slv].toString(); 
-			$('#sort').val(sortVal);
-		}
-		
-		function changeGroupByFunc() {
-			var glv = $('#groupByList').val();
-			var groupByVal = glv == 'none' ? '' : window[glv].toString(); 
-			$('#groupBy').val(groupByVal);
+		//Generate values for lists
+		function generateSelectValues(selectID, arr) {
+			var list = $('#' + selectID); 
+			for(var idx in arr) {
+			    $('<option />', {value: arr[idx], text: arr[idx]}).appendTo(list);
+			}
 		}
 		
 		$(function() {
 			$(document).delegate('textarea', 'keydown', UIUtils.insertTabOnTabPress);
 			
-			var sortList = $('#sortList'); 
-			for(var idx in sorts) {
-			    $('<option />', {value: sorts[idx], text: sorts[idx]}).appendTo(sortList);
-			}
-			var filterList = $('#filterList'); 
-			for(var idx in filters) {
-			    $('<option />', {value: filters[idx], text: filters[idx]}).appendTo(filterList);
-			}
-			var groupByList = $('#groupByList'); 
-			for(var idx in groupBys) {
-			    $('<option />', {value: groupBys[idx], text: groupBys[idx]}).appendTo(groupByList);
-			}
+			generateSelectValues('sortList', sorts);
+			generateSelectValues('filterList', filters);
+			generateSelectValues('groupByList', groupBys);
 		});
 	</script>
 </head>
@@ -116,15 +104,15 @@
    	<textarea id="text" name="text" cols="75" rows="10" placeholder="Put JSON to transform here..."></textarea>
 	<br/>
 	<h2>Filter function</h2>
-	<div>Examples: <select id="filterList" onchange="changeFilterFunc()"></select></div>
+	<div>Examples: <select id="filterList" onchange="changeFunc('filterList','filter')"></select></div>
 	<textarea id="filter" name="filter" cols="75" rows="10" placeholder="Put a filter function here..."></textarea>
 	<br/>
 	<h2>Sort function</h2>
-	<div>Examples: <select id="sortList" onchange="changeSortFunc()"></select></div>
+	<div>Examples: <select id="sortList" onchange="changeFunc('sortList','sort')"></select></div>
 	<textarea id="sort" name="sort" cols="75" rows="10" placeholder="Put a sort function here..."></textarea>
 	<br/>
 	<h2>GroupBy function</h2>
-	<div>Examples: <select id="groupByList" onchange="changeGroupByFunc()"></select></div>
+	<div>Examples: <select id="groupByList" onchange="changeFunc('groupByList', 'groupBy')"></select></div>
 	<textarea id="groupBy" name="groupBy" cols="75" rows="10" placeholder="Put a groupBy function here..."></textarea>
 	<br/>
 	</div>
