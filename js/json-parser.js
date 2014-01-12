@@ -39,9 +39,10 @@
 	
 	//Split a JSON string into key value pairs, but not prematurely splitting values
 	//Strips indentation on arrays
-	var delimMap = { '{' : '}', '[' : ']' };
-	var reverseDelimMap = { '}' : '{', ']' : '[' };
+	var startDelimMap = '{[';
+	var endDelimMap = { '}' : '{', ']' : '[' };
 	var symmetricDelimMap = '\'"';
+	var escapeChar = "\\";
 	function splitCommas(text) {
 		text = Utils.getBracketInner(removeComments(text));
 		var res = [];
@@ -49,26 +50,29 @@
 		var idx = 0;
 		var currentKVPair = '';
 		var c = text[idx];
+		var foundEscape = false;
 		while(c) {
-			if(symmetricDelimMap.indexOf(c) != -1) {
+			if(foundEscape) {
+				foundEscape = false;
+			} else if(c == escapeChar) {
+				foundEscape = true;		
+			} else if(symmetricDelimMap.indexOf(c) != -1) {
 				if(Utils.last(stack) == c) {
 					stack.pop();
 				} else {
 					stack.push(c);
 				}
-				currentKVPair += c;
-			} else if(reverseDelimMap[c]) {
-				var token = reverseDelimMap[c];
+			} else if(endDelimMap[c]) {
+				var token = endDelimMap[c];
 				var tokenMatch = stack.pop();
-				if(token == tokenMatch) {
-					currentKVPair += c;
-				} else {
+				if(token != tokenMatch) {
 					throw 'Error: Unmatched delimeters: ' + token + ' ' + tokenMatch;					
 				}
-			} else if(delimMap[c]) {
+			} else if(startDelimMap.indexOf(c) != -1) {
 				stack.push(c);
-				currentKVPair += c;
-			} else if(c == ',' && stack.length == 0) {
+			} 
+			
+			if(c == ',' && stack.length == 0) {
 				res.push(currentKVPair);
 				currentKVPair = '';
 			} else {
@@ -79,6 +83,9 @@
 			c = text[idx];
 		}
 		
+		if(stack.length != 0) {
+			throw 'Error: Unmatched delims left! ' + stack;
+		}
 		if(currentKVPair.length > 0) {
 			res.push(currentKVPair);
 		}
