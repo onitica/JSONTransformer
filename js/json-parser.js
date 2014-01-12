@@ -3,14 +3,48 @@
 ;var JSONParser = function() {
 	"use strict";
 	
+	//Constants used for parsing
+	var startDelimMap = '{[';
+	var endDelimMap = { '}' : '{', ']' : '[' };
+	var symmetricDelimMap = '\'"';
+	var escapeChar = "\\";
+	
 	//Generate JSON from an array of key-value pairs (ex: [[key1,val1],[key2,val2]] )
 	//Can pass an optional indent level (default is 1)
-	function generate(vals, indentLevel) {
-		if(!indentLevel) indentLevel = 1;
+	function generate(vals) {
 		var json = '{\n';
-		json += Utils.join(',\n', vals.map(function(x) { return Utils.repeat('\t',indentLevel) + x[0] + ' : ' + x[1]; }));
-		json += '\n' + Utils.repeat('\t',indentLevel-1) + '}';
+		json += Utils.join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + generateObjectIndentation(x[1].replace(/\n(\s+)/g,'\n')); }));
+		json += '\n' + '}';
 		return json;
+	}
+	
+	//Generate proper inner indentation for JSON objects
+	function generateObjectIndentation(text) {
+		var stack = [];
+		var res = '';
+		var idx = 0;
+		var c = text[idx];
+		while(c) {
+			if(c == '{') {
+				stack.push('{');
+			} else if(c == '}') {
+				stack.pop();
+				if(Utils.last(res) == '\t') {
+					res = res.substring(0, res.length - 1); //remove extra tab at end
+				}
+			} 
+			
+			if(c == '\n') {
+				res += '\n' + Utils.repeat('\t', stack.length + 1);				
+			} else {
+				res += c;				
+			}
+			
+			idx += 1;
+			c = text[idx];
+		}
+		
+		return res;
 	}
 	
 	//Validate that we have parsed valid JSON
@@ -39,10 +73,6 @@
 	
 	//Split a JSON string into key value pairs, but not prematurely splitting values
 	//Strips indentation on arrays
-	var startDelimMap = '{[';
-	var endDelimMap = { '}' : '{', ']' : '[' };
-	var symmetricDelimMap = '\'"';
-	var escapeChar = "\\";
 	function splitCommas(text) {
 		text = Utils.getBracketInner(removeComments(text));
 		var res = [];

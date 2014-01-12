@@ -32,13 +32,19 @@
 		//Inputs are arrays with the following format [<key>, <value>] (represents a JSON property)
 		var groupBys = ['none', 'valType'];
 		function valType(arr) {
-			var t = typeof(arr[1]);
-			switch(t) {
-				case 'object':
-					return arr[1] instanceof Array ? "array" : "object";
-					break;
-				default:
-					return t;
+			var startChar = arr[1][0];
+ 			if(arr[1].substr(0,8).localeCompare('function') === 0) {
+				return 'function';
+			} else if(startChar == '[') {
+				return 'array';
+			} else if(startChar == '{') {
+				return 'object';
+			} else if(startChar == '"' || startChar == '\'') {
+				return 'string';
+			} else if(parseFloat(arr[1])) {
+				return 'float';
+			} else {
+				return 'Needs to be evaluated';
 			}
 		}
 		
@@ -58,7 +64,7 @@
 					parsedVals = Utils.groupBy(parsedVals, Utils.createFunction(groupByFunc));
 					json = [];
 					for(var idx in parsedVals) {
-						json.push([idx,JSONParser.generate(parsedVals[idx],2)]);
+						json.push([idx,JSONParser.generate(parsedVals[idx])]);
 					}
 					json = JSONParser.generate(json);
 				} else {
