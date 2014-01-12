@@ -37,13 +37,68 @@
 		return text.replace(/([\s]+)?\n/g,'');
 	}
 	
+	//Split a JSON string into key value pairs, but not prematurely splitting values
+	//Strips indentation on arrays
+	var delimMap = { '{' : '}', '[' : ']' };
+	var reverseDelimMap = { '}' : '{', ']' : '[' };
+	var symmetricDelimMap = '\'"';
+	function splitCommas(text) {
+		text = Utils.getBracketInner(removeComments(text));
+		var res = [];
+		var stack = [];
+		var idx = 0;
+		var currentKVPair = '';
+		var c = text[idx];
+		while(c) {
+			if(symmetricDelimMap.indexOf(c) != -1) {
+				if(Utils.last(stack) == c) {
+					stack.pop();
+				} else {
+					stack.push(c);
+				}
+				currentKVPair += c;
+			} else if(reverseDelimMap[c]) {
+				var token = reverseDelimMap[c];
+				var tokenMatch = stack.pop();
+				if(token == tokenMatch) {
+					currentKVPair += c;
+				} else {
+					throw 'Error: Unmatched delimeters: ' + token + ' ' + tokenMatch;					
+				}
+			} else if(delimMap[c]) {
+				stack.push(c);
+				currentKVPair += c;
+			} else if(c == ',' && stack.length == 0) {
+				res.push(currentKVPair);
+				currentKVPair = '';
+			} else {
+				currentKVPair += c;
+			}
+			
+			idx += 1;
+			c = text[idx];
+		}
+		
+		if(currentKVPair.length > 0) {
+			res.push(currentKVPair);
+		}
+		return res;
+	}
+	
+	function splitJSONVal(val) {
+		var parsed = val.split(/:([\s\S]+)?/m);
+		return [Utils.strip(parsed[0]),Utils.strip(parsed[1])];
+	}
+	
 	//Generate a matrix of key value pairs from the string
 	function parse(text) {
-		return validateParsedVals(Utils.getBracketInner(removeComments(text)).split(',').map(function(s) { return s.split(':').map(Utils.strip); }));
+		return validateParsedVals(splitCommas(text).map(function(s) { return splitJSONVal(s) }));
 	}
 	
 	return {
 		generate : generate,
-		parse : parse
+		parse : parse,
+		splitCommas : splitCommas,
+		splitJSONVal : splitJSONVal
 	}
 }();

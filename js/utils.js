@@ -15,6 +15,11 @@
 		return str;
 	}
 	
+	//Returns last element in array
+	function last(arr) {
+		return arr[arr.length - 1];
+	}
+	
 	//Return string repeated n times
 	//Returns an empty string is n <= 0
 	function repeat(s, n) {
@@ -75,6 +80,7 @@
 		getBracketInner : getBracketInner,
 		groupBy : groupBy,
 		join : join,
+		last : last,
 		repeat : repeat,
 		strip : strip
 	}
