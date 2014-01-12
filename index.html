@@ -22,10 +22,24 @@
 		}
 		
 		//FILTERING FUNCTIONS
-		//Inputs is an array with the following format [key, value] (represents a JSON property)
+		//Inputs are arrays with the following format [key, value] (represents a JSON property)
 		var filters = ['none','removeFunctions'];
 		function removeFunctions(arr) {
 			return arr[1].substr(0,8).localeCompare('function') !== 0;
+		}
+		
+		//GROUPBY FUNCTIONS
+		//Inputs are arrays with the following format [<key>, <value>] (represents a JSON property)
+		var groupBys = ['none', 'valType'];
+		function valType(arr) {
+			var t = typeof(arr[1]);
+			switch(t) {
+				case 'object':
+					return arr[1] instanceof Array ? "array" : "object";
+					break;
+				default:
+					return t;
+			}
 		}
 		
 		function work() {
@@ -36,12 +50,22 @@
 			
 				var filterFunc = $('#filter').val();
 				var sortFunc = $('#sort').val();
+				var groupByFunc = $('#groupBy').val();
 			
 				if(Utils.strip(filterFunc) !== '') parsedVals = parsedVals.filter(Utils.createFunction(filterFunc));
 				if(Utils.strip(sortFunc) !== '') parsedVals.sort(Utils.createFunction(sortFunc));
+				if(Utils.strip(groupByFunc) !== '') {
+					parsedVals = Utils.groupBy(parsedVals, Utils.createFunction(groupByFunc));
+					json = [];
+					for(var idx in parsedVals) {
+						json.push([idx,JSONParser.generate(parsedVals[idx],2)]);
+					}
+					json = JSONParser.generate(json);
+				} else {
+					var json = JSONParser.generate(parsedVals);
+				}
 			
-				//Generate new JSON and convert to screen readable format
-				var json = JSONParser.generate(parsedVals);
+				//Convert to screen readable format
 				$('#result').css('color', 'black').html(json.replace(/\n/g, '<br/>').replace(/\t/g, '&nbsp&nbsp&nbsp&nbsp'));
 	    	} catch (e) {
 				$('#result').css('color', 'red').html(e);
@@ -60,6 +84,12 @@
 			$('#sort').val(sortVal);
 		}
 		
+		function changeGroupByFunc() {
+			var glv = $('#groupByList').val();
+			var groupByVal = glv == 'none' ? '' : window[glv].toString(); 
+			$('#groupBy').val(groupByVal);
+		}
+		
 		$(function() {
 			$(document).delegate('textarea', 'keydown', UIUtils.insertTabOnTabPress);
 			
@@ -70,6 +100,10 @@
 			var filterList = $('#filterList'); 
 			for(var idx in filters) {
 			    $('<option />', {value: filters[idx], text: filters[idx]}).appendTo(filterList);
+			}
+			var groupByList = $('#groupByList'); 
+			for(var idx in groupBys) {
+			    $('<option />', {value: groupBys[idx], text: groupBys[idx]}).appendTo(groupByList);
 			}
 		});
 	</script>
@@ -88,6 +122,10 @@
 	<h2>Sort function</h2>
 	<div>Examples: <select id="sortList" onchange="changeSortFunc()"></select></div>
 	<textarea id="sort" name="sort" cols="75" rows="10" placeholder="Put a sort function here..."></textarea>
+	<br/>
+	<h2>GroupBy function</h2>
+	<div>Examples: <select id="groupByList" onchange="changeGroupByFunc()"></select></div>
+	<textarea id="groupBy" name="groupBy" cols="75" rows="10" placeholder="Put a groupBy function here..."></textarea>
 	<br/>
 	</div>
 	<div style="float:left;margin-left:40px">

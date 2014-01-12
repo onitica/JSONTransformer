@@ -4,10 +4,12 @@
 	"use strict";
 	
 	//Generate JSON from an array of key-value pairs (ex: [[key1,val1],[key2,val2]] )
-	function generate(vals) {
+	//Can pass an optional indent level (default is 1)
+	function generate(vals, indentLevel) {
+		if(!indentLevel) indentLevel = 1;
 		var json = '{\n';
-		json += Utils.join(',\n', vals.map(function(x) { return '\t' + x[0] + ' : ' + x[1]; }));
-		json += '\n}';
+		json += Utils.join(',\n', vals.map(function(x) { return Utils.repeat('\t',indentLevel) + x[0] + ' : ' + x[1]; }));
+		json += '\n' + Utils.repeat('\t',indentLevel-1) + '}';
 		return json;
 	}
 	

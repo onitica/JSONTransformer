@@ -15,6 +15,29 @@
 		return str;
 	}
 	
+	//Return string repeated n times
+	//Returns an empty string is n <= 0
+	function repeat(s, n) {
+		var res = '';
+		for(var i = 0; i < n; i++) {
+			res += s;
+		}
+		return res;
+	}
+	
+	//groupBy function implementation
+	//Takes a list and a function
+	function groupBy(arr, func) {
+		var groups = {};
+		arr.forEach(function(ele) {
+			var res = func(ele);
+			if(groups[res]) {
+				groups[res].push(ele);
+			} else groups[res] = [ele];
+		});
+		return groups;
+	}
+	
 	//Return the text inside the brackets
 	function getBracketInner(text) {
 		return strip(text.substring(text.indexOf('{') + 1,text.lastIndexOf('}')));
@@ -50,7 +73,9 @@
 		createFunction : createFunction,
 		construct : construct,
 		getBracketInner : getBracketInner,
+		groupBy : groupBy,
 		join : join,
+		repeat : repeat,
 		strip : strip
 	}
 }();
